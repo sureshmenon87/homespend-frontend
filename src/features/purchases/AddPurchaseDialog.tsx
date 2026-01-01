@@ -11,6 +11,7 @@ import { usePurchases } from "./usePurchases";
 import { useToast } from "@/components/ui/use-toast";
 import { usePurchaseDefaults } from "@/hooks/usePurchaseDefaults";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -27,13 +28,17 @@ export function AddPurchaseDialog({
   const [defaults, setDefaults] = usePurchaseDefaults();
   const isEdit = !!editingPurchase;
   const { showToast } = useToast();
-  const [form, setForm] = useState({
+  const emptyForm = {
     itemId: "",
-    shopId: "",
-    purchaseDate: "",
+    shopId: defaults.shopId,
+    purchaseDate: defaults.purchaseDate,
+
     quantity: "",
     unitPrice: "",
-  });
+    mrp: "",
+  };
+
+  const [form, setForm] = useState(emptyForm);
 
   const initialForm = {
     itemId: editingPurchase?.items?.id ?? "",
@@ -44,29 +49,45 @@ export function AddPurchaseDialog({
       new Date().toISOString().slice(0, 10),
     quantity: editingPurchase?.quantity ?? "",
     unitPrice: editingPurchase?.unitPrice ?? "",
+    mrp: editingPurchase?.mrp ?? "",
   };
 
   useEffect(() => {
-    if (!editingPurchase) return;
+    if (!editingPurchase) {
+      setForm(emptyForm);
+      return;
+    }
 
     setForm({
       itemId: editingPurchase.items?.id ?? "",
       shopId: editingPurchase.shops?.id ?? "",
-      purchaseDate: editingPurchase.purchaseDate.slice(0, 10),
-      quantity: editingPurchase.quantity,
-      unitPrice: editingPurchase.unitPrice,
+      purchaseDate: editingPurchase.purchaseDate
+        ? editingPurchase.purchaseDate.slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+      quantity: editingPurchase.quantity ?? "",
+      unitPrice: editingPurchase.unitPrice ?? "",
+      mrp: editingPurchase?.mrp ?? "",
     });
   }, [editingPurchase]);
 
   const handleCancel = () => {
-    setForm(initialForm);
+    setForm(emptyForm);
     onOpenChange(false);
   };
 
   async function handleSubmit(data: PurchaseFormData) {
     try {
-      if (isEdit) {
+      const payload = {
+        itemId: form.itemId,
+        shopId: form.shopId,
+        purchaseDate: new Date(form.purchaseDate).toISOString(),
+        quantity: Number(form.quantity),
+        unitPrice: Number(form.unitPrice),
+        mrp: data.mrp,
+      };
+      if (isEdit && editingPurchase) {
         await updatePurchase(editingPurchase.id, data);
+        toast("Purchase Updated");
       } else {
         await addPurchase({
           itemId: data.itemId,
@@ -93,13 +114,20 @@ export function AddPurchaseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-gray-900 max-w-xl">
         <DialogHeader>
-          <DialogTitle>Add Purchase</DialogTitle>
+          <DialogTitle>
+            {" "}
+            {isEdit ? "Update Purchase" : "Add Purchase"}
+          </DialogTitle>
         </DialogHeader>
 
         <PurchaseForm
+          form={form}
+          setForm={setForm}
+          editingPurchase={editingPurchase}
           onSubmit={handleSubmit}
           submitting={isAdding}
-          onCancel={() => onOpenChange(false)}
+          onClick={handleCancel}
+          isEdit={!!editingPurchase}
         />
       </DialogContent>
     </Dialog>

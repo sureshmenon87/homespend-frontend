@@ -107,6 +107,29 @@ export function usePurchases() {
     }
   }
 
+  async function updatePurchase(id: number, data: PurchaseFormData) {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/purchases/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          mrp: data.mrp || data.unitPrice,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update purchase");
+
+      const updated = await res.json();
+
+      setPurchases((prev) => prev.map((p) => (p.id === id ? updated : p)));
+
+      toast("Updated successfully");
+    } finally {
+      setLoading(false);
+    }
+  }
   useEffect(() => {
     fetchPurchases();
   }, []);
@@ -119,5 +142,6 @@ export function usePurchases() {
     fetchPurchases,
     addPurchase,
     deletePurchase,
+    updatePurchase,
   };
 }
