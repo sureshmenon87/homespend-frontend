@@ -4,12 +4,12 @@ import { toast } from "sonner";
 
 import type { Purchase, PurchaseFormData } from "./types";
 
+//const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API_BASE = "http://localhost:3000/api";
 
 export function usePurchases() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ---------------------------
@@ -24,39 +24,12 @@ export function usePurchases() {
     setError(null);
 
     try {
-      const params = new URLSearchParams();
-
-      if (filters?.search) {
-        params.append("search", filters.search);
-      }
-
-      if (filters?.from) {
-        params.append(
-          "from",
-          new Date(`${filters.from}T00:00:00.000Z`).toISOString()
-        );
-      }
-
-      if (filters?.to) {
-        params.append(
-          "to",
-          new Date(`${filters.to}T23:59:59.999Z`).toISOString()
-        );
-      }
-
-      const url =
-        params.toString().length > 0
-          ? `${API_BASE}/purchases?${params.toString()}`
-          : `${API_BASE}/purchases`;
-
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Failed to fetch purchases");
-
-      const data: Purchase[] = await res.json();
-      // setPurchases(data);
-      setPurchases(Array.isArray(data.data) ? data.data : []);
+      const params = new URLSearchParams(filters as any).toString();
+      const res = await fetch(`${API_BASE}/purchases?${params}`);
+      const data = await res.json();
+      setPurchases(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError("Failed to load purchases");
     } finally {
       setLoading(false);
     }
@@ -66,25 +39,23 @@ export function usePurchases() {
   // Add purchase
   // ---------------------------
   async function addPurchase(data: PurchaseFormData) {
-    setIsAdding(true);
-    setError(null);
-
+    setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/purchases`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          mrp: data.mrp ?? data.unitPrice,
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to add purchase");
-      toast("Your purchase was saved successfully");
+      if (!res.ok) throw new Error("Add failed");
 
-      await fetchPurchases(); // refresh list
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-      toast("Failed to save purchase");
+      const created = await res.json();
+      setPurchases((prev) => [created, ...prev]); // 👈 instant refresh
     } finally {
-      setIsAdding(false);
+      setLoading(false);
     }
   }
 
@@ -92,19 +63,8 @@ export function usePurchases() {
   // Delete purchase
   // ---------------------------
   async function deletePurchase(id: number) {
-    setError(null);
-
-    try {
-      const res = await fetch(`${API_BASE}/purchases/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Failed to delete purchase");
-      toast("Deleted successfully");
-      setPurchases((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    }
+    await fetch(`${API_BASE}/purchases/${id}`, { method: "DELETE" });
+    setPurchases((prev) => prev.filter((p) => p.id !== id));
   }
 
   async function updatePurchase(id: number, data: PurchaseFormData) {
@@ -115,29 +75,24 @@ export function usePurchases() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          mrp: data.mrp || data.unitPrice,
+          mrp: data.mrp ?? data.unitPrice,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update purchase");
+      if (!res.ok) throw new Error("Update failed");
 
       const updated = await res.json();
-
       setPurchases((prev) => prev.map((p) => (p.id === id ? updated : p)));
-
-      toast("Updated successfully");
+      // await fetchPurchases();
     } finally {
       setLoading(false);
     }
   }
-  useEffect(() => {
-    fetchPurchases();
-  }, []);
 
   return {
     purchases,
     loading,
-    isAdding,
+
     error,
     fetchPurchases,
     addPurchase,

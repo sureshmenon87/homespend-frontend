@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { PurchasesFilters } from "@/features/purchases/PurchasesFilters";
 import { PurchasesTable } from "@/features/purchases/PurchasesTable";
-import type { Purchase } from "@/features/purchases/types";
+import type { Purchase, PurchaseFormData } from "@/features/purchases/types";
 import { usePurchases } from "@/features/purchases/usePurchases";
 
 import { Plus } from "lucide-react";
@@ -12,9 +12,16 @@ import { AddPurchaseDialog } from "../features/purchases/AddPurchaseDialog";
 import { useEffect, useState } from "react";
 
 export function PurchasesPage() {
-  const { purchases, loading, error, fetchPurchases, deletePurchase } =
-    usePurchases();
-  const [open, setOpen] = useState(false);
+  const {
+    purchases,
+    loading,
+    error,
+    fetchPurchases,
+    addPurchase,
+    updatePurchase,
+    deletePurchase,
+  } = usePurchases();
+
   const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -23,7 +30,7 @@ export function PurchasesPage() {
 
   function handleEdit(purchase: Purchase) {
     setEditingPurchase(purchase);
-    setOpen(true);
+    setDialogOpen(true);
   }
 
   function handleAdd() {
@@ -39,6 +46,20 @@ export function PurchasesPage() {
   useEffect(() => {
     fetchPurchases(filters);
   }, [filters]);
+
+  async function handleSave(data: PurchaseFormData) {
+    if (editingPurchase) {
+      await updatePurchase(editingPurchase.id, data);
+    } else {
+      await addPurchase(data);
+    }
+
+    // 🔑 refresh list OR rely on optimistic update
+    await fetchPurchases();
+
+    setDialogOpen(false);
+    setEditingPurchase(null);
+  }
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -49,22 +70,21 @@ export function PurchasesPage() {
             Track and manage your grocery and daily expenses.
           </p>
         </div>
-
         <Button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setEditingPurchase(null);
+            setDialogOpen(true);
+            console.log("Clicked...");
+          }}
           className="flex items-center gap-2"
           variant="default"
         >
           <Plus className="h-4 w-4" />
           Add Purchase
         </Button>
-
         <AddPurchaseDialog
-          open={open}
-          onOpenChange={(v) => {
-            setOpen(v);
-            if (!v) setEditingPurchase(null);
-          }}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
           editingPurchase={editingPurchase}
         />
       </div>
