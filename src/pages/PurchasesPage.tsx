@@ -33,19 +33,34 @@ export function PurchasesPage() {
     setDialogOpen(true);
   }
 
+  const handleSuccess = () => {
+    fetchPurchases(filters);
+  };
+
   function handleAdd() {
     setEditingPurchase(null);
     setDialogOpen(true);
   }
-  const [filters, setFilters] = useState<{
+  /*const [filters, setFilters] = useState<{
     search?: string;
     from?: string;
     to?: string;
-  }>({});
+  }>({});*/
+
+  const filters = {
+    search,
+    from,
+    to,
+    page,
+    limit: pageSize,
+  };
 
   useEffect(() => {
     fetchPurchases(filters);
-  }, [filters]);
+  }, [search, from, to, page, pageSize]);
+  useEffect(() => {
+    setPage(1);
+  }, [search, from, to, pageSize]);
 
   async function handleSave(data: PurchaseFormData) {
     if (editingPurchase) {
@@ -86,6 +101,7 @@ export function PurchasesPage() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           editingPurchase={editingPurchase}
+          onSuccess={handleSuccess}
         />
       </div>
       {/* Filters */}

@@ -1,20 +1,21 @@
-// src/hooks/usePurchaseDefaults.ts
-import { useState, useEffect } from "react";
+import type { Shop } from "@/features/shops/useShops";
+import { useLocalStorage } from "./useLocalStorage";
 
-type Defaults = {
-  shopId?: number;
-  purchaseDate?: string;
-};
+export interface PurchaseDefaults {
+  usePrevious: boolean;
+  shop: Shop | null;
+  purchaseDate: string | null;
+}
 
 export function usePurchaseDefaults() {
-  const [defaults, setDefaults] = useState<Defaults>(() => {
-    const raw = localStorage.getItem("purchaseDefaults");
-    return raw ? JSON.parse(raw) : {};
-  });
+  const [defaults, setDefaults] = useLocalStorage<PurchaseDefaults>(
+    "purchaseDefaults",
+    {
+      usePrevious: false,
+      shop: null,
+      purchaseDate: null,
+    }
+  );
 
-  useEffect(() => {
-    localStorage.setItem("purchaseDefaults", JSON.stringify(defaults));
-  }, [defaults]);
-
-  return [defaults, setDefaults] as const;
+  return { defaults, setDefaults };
 }
