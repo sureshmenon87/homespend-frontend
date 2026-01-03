@@ -4,6 +4,9 @@ import Dashboard from "../pages/DashboardPage";
 import { PurchasesPage } from "../pages/PurchasesPage";
 import Reports from "../pages/Reports";
 import AI from "../pages/AI";
+import CategoriesPage from "@/features/categories/CategoriesPage";
+import ItemsPage from "@/features/items/ItemsPage";
+import ReportsPage from "@/pages/ReportsPage";
 
 export function AppRoutes() {
   return (
@@ -11,7 +14,9 @@ export function AppRoutes() {
       <Route element={<DashboardLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/purchases" element={<PurchasesPage />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/items" element={<ItemsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/ai" element={<AI />} />
       </Route>
 
