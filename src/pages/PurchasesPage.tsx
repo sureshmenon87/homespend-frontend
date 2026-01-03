@@ -12,21 +12,43 @@ import { AddPurchaseDialog } from "../features/purchases/AddPurchaseDialog";
 import { useEffect, useState } from "react";
 
 export function PurchasesPage() {
+  const [filters, setFilters] = useState<{
+    search?: string;
+    from?: string;
+    to?: string;
+  }>({});
   const {
     purchases,
     loading,
     error,
+
+    pageSize,
+    total,
+
+    setPageSize,
     fetchPurchases,
     addPurchase,
     updatePurchase,
     deletePurchase,
-  } = usePurchases();
+  } = usePurchases(filters);
 
   const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // pagination
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [limit, setLimit] = useState(10);
+
+  const totalPages = Math.ceil(total / limit);
+
+  // 🔑 SINGLE EFFECT – everything flows from here
+  useEffect(() => {
+    fetchPurchases({
+      ...filters,
+      page,
+      limit,
+    });
+  }, [filters, page, limit]);
 
   function handleEdit(purchase: Purchase) {
     setEditingPurchase(purchase);
@@ -41,26 +63,6 @@ export function PurchasesPage() {
     setEditingPurchase(null);
     setDialogOpen(true);
   }
-  /*const [filters, setFilters] = useState<{
-    search?: string;
-    from?: string;
-    to?: string;
-  }>({});*/
-
-  const filters = {
-    search,
-    from,
-    to,
-    page,
-    limit: pageSize,
-  };
-
-  useEffect(() => {
-    fetchPurchases(filters);
-  }, [search, from, to, page, pageSize]);
-  useEffect(() => {
-    setPage(1);
-  }, [search, from, to, pageSize]);
 
   async function handleSave(data: PurchaseFormData) {
     if (editingPurchase) {
@@ -75,6 +77,7 @@ export function PurchasesPage() {
     setDialogOpen(false);
     setEditingPurchase(null);
   }
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -105,7 +108,13 @@ export function PurchasesPage() {
         />
       </div>
       {/* Filters */}
-      <PurchasesFilters filters={filters} onChange={setFilters} />
+      <PurchasesFilters
+        filters={filters}
+        onChange={(next) => {
+          setPage(1); // reset page on filter change
+          setFilters(next);
+        }}
+      />
       {/* Table */}
       <Card>
         <CardHeader className="pb-3">
@@ -119,6 +128,53 @@ export function PurchasesPage() {
             onEdit={handleEdit}
             onDelete={deletePurchase}
           />
+          {/* Pagination */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Page size */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Rows per page
+              </span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPage(1);
+                  setLimit(Number(e.target.value));
+                }}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+              </select>
+            </div>
+
+            {/* Page navigation */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+
+              <span className="text-sm">
+                Page <strong>{page}</strong> of{" "}
+                <strong>{totalPages || 1}</strong>
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === totalPages || totalPages === 0}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

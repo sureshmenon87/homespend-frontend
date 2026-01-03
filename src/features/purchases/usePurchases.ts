@@ -7,10 +7,21 @@ import type { Purchase, PurchaseFormData } from "./types";
 //const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API_BASE = "http://localhost:3000/api";
 
-export function usePurchases() {
+interface Filters {
+  search?: string;
+  from?: string;
+  to?: string;
+}
+
+export function usePurchases(filters?: Filters) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   // ---------------------------
   // Fetch all purchases
@@ -19,6 +30,8 @@ export function usePurchases() {
     search?: string;
     from?: string;
     to?: string;
+    page?: number;
+    limt?: number;
   }) {
     setLoading(true);
     setError(null);
@@ -28,13 +41,16 @@ export function usePurchases() {
       const res = await fetch(`${API_BASE}/purchases?${params}`);
       const data = await res.json();
       setPurchases(data.data);
+      setTotal(data.meta.total);
     } catch (err) {
       setError("Failed to load purchases");
     } finally {
       setLoading(false);
     }
   }
-
+  useEffect(() => {
+    fetchPurchases(filters);
+  }, [pageSize]);
   // ---------------------------
   // Add purchase
   // ---------------------------
@@ -98,5 +114,11 @@ export function usePurchases() {
     addPurchase,
     deletePurchase,
     updatePurchase,
+    // pagination
+    page,
+    pageSize,
+    total,
+    setPage,
+    setPageSize,
   };
 }
