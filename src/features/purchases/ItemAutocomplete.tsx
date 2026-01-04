@@ -56,10 +56,12 @@ export function ItemAutocomplete({ value, onSelect }: Props) {
                     value?.id === item.id ? "opacity-100" : "opacity-0"
                   )}
                 />
-                {item.name}
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {item.category.name}
-                </span>
+                <div className="flex flex-col">
+                  <div className="font-medium">{item.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {item.category.name}
+                  </div>
+                </div>
               </CommandItem>
             ))}
           </CommandList>

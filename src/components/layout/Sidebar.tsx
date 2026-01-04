@@ -6,6 +6,7 @@ import {
   Brain,
   Tags,
   Package,
+  Store,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const navItems = [
 const masterItems = [
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/items", label: "Items", icon: Package },
+  { to: "/shops", label: "Shops", icon: Store },
 ];
 
 export function Sidebar() {

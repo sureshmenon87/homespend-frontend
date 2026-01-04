@@ -1,6 +1,6 @@
-// src/components/CategorySelect.tsx
-import { useEffect, useState } from "react";
-import type { Category } from "../features/purchases/types";
+import * as Select from "@radix-ui/react-select";
+import { ChevronDown } from "lucide-react";
+import { CategoryIcon } from "@/components/CategoryIcon";
 
 interface Category {
   id: number;
@@ -10,58 +10,54 @@ interface Category {
 }
 
 interface Props {
-  value: Category | null;
+  value?: number;
   categories: Category[];
-  onChange: (c: Category) => void;
+  onChange: (id: number) => void;
 }
-const API_BASE = "http://localhost:3000";
 
-export function CategorySelect({ value, onChange }: Props) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    fetch(`${API_BASE}/api/categories`)
-      .then((r) => r.json())
-      .then(setCategories);
-  }, []);
-
-  async function createCategory() {
-    const res = await fetch(`${API_BASE}/api/categories`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.toUpperCase() }),
-    });
-
-    const created: Category = await res.json();
-    setCategories((prev) => [...prev, created]);
-    onChange(created);
-  }
+export function CategorySelect({ value, categories, onChange }: Props) {
+  const selected = categories.find((c) => c.id === value);
 
   return (
-    <div>
-      <select
-        value={value?.id ?? ""}
-        onChange={(e) => {
-          const cat = categories.find((c) => c.id === Number(e.target.value));
-          if (cat) onChange(cat);
-        }}
-      >
-        <option value="">Select category</option>
-        {categories.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
+    <Select.Root
+      value={value?.toString()}
+      onValueChange={(v) => onChange(Number(v))}
+    >
+      <Select.Trigger className="border px-3 py-2 flex items-center gap-2 w-full">
+        {selected ? (
+          <>
+            <CategoryIcon icon={selected.icon} />
+            <span>{selected.name}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">Select category</span>
+        )}
+        <ChevronDown className="ml-auto h-4 w-4" />
+      </Select.Trigger>
 
-      <input
-        placeholder="New category"
-        value={name}
-        onChange={(e) => setName(e.target.value.toUpperCase())}
-      />
-
-      <button onClick={createCategory}>Add</button>
-    </div>
+      <Select.Content className="bg-white border rounded shadow-md w-[320px] max-h-[300px]">
+        <Select.Viewport className="max-h-[300px] overflow-y-auto">
+          {categories.map((c) => (
+            <Select.Item
+              key={c.id}
+              value={c.id.toString()}
+              className="px-3 py-2 cursor-pointer focus:bg-accent"
+            >
+              <div className="flex gap-3">
+                <CategoryIcon icon={c.icon} />
+                <div>
+                  <div className="font-medium">{c.name}</div>
+                  {c.description && (
+                    <div className="text-xs text-muted-foreground">
+                      {c.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+      </Select.Content>
+    </Select.Root>
   );
 }

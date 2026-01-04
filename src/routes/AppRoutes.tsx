@@ -7,6 +7,7 @@ import AI from "../pages/AI";
 import CategoriesPage from "@/features/categories/CategoriesPage";
 import ItemsPage from "@/features/items/ItemsPage";
 import ReportsPage from "@/pages/ReportsPage";
+import ShopsPage from "@/pages/ShopsPage";
 
 export function AppRoutes() {
   return (
@@ -16,6 +17,8 @@ export function AppRoutes() {
         <Route path="/purchases" element={<PurchasesPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/items" element={<ItemsPage />} />
+        <Route path="/shops" element={<ShopsPage />} />
+
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/ai" element={<AI />} />
       </Route>

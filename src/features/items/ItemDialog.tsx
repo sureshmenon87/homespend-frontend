@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Item } from "./types";
 import type { Category } from "../categories/types";
+import { CategorySelect } from "@/components/CategorySelect";
 
 interface Props {
   open: boolean;
@@ -41,18 +42,11 @@ export default function ItemDialog({
           placeholder="ITEM NAME"
         />
 
-        <select
-          className="border w-full p-2 mb-3"
+        <CategorySelect
           value={categoryId}
-          onChange={(e) => setCategoryId(Number(e.target.value))}
-        >
-          <option value="">Select Category</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+          categories={categories}
+          onChange={setCategoryId}
+        />
 
         <div className="flex justify-end gap-2">
           <button onClick={onClose}>Cancel</button>

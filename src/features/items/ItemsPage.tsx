@@ -125,7 +125,7 @@ export default function ItemsPage() {
           {filteredItems.map((i) => (
             <tr key={i.id} className="border-t">
               <td className="p-2">{i.name}</td>
-              <td className="p-2">{i.categoryName}</td>
+              <td className="p-2">{i.category.name}</td>
               <td className="p-2 flex gap-2">
                 <button
                   onClick={() => {
