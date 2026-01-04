@@ -2,8 +2,16 @@
 import { useEffect, useState } from "react";
 import type { Category } from "../features/purchases/types";
 
+interface Category {
+  id: number;
+  name: string;
+  description: string | null;
+  icon?: string | null;
+}
+
 interface Props {
   value: Category | null;
+  categories: Category[];
   onChange: (c: Category) => void;
 }
 const API_BASE = "http://localhost:3000";

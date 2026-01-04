@@ -9,22 +9,23 @@ import {
 import CategoryDialog from "./CategoryDialog";
 import type { Category } from "./types";
 import { toast } from "sonner";
+import { CategoryIcon } from "@/components/CategoryIcon";
 
 export default function CategoriesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Category | null>(null);
 
-  const { data = [] } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  async function handleSave(name: string) {
+  async function handleSave(name: string, description: string) {
     if (selected) {
-      await updateCategory(selected.id, name);
+      await updateCategory(selected.id, name, description);
     } else {
-      await createCategory(name);
+      await createCategory(name, description);
     }
     qc.invalidateQueries({ queryKey: ["categories"] });
   }
@@ -56,14 +57,21 @@ export default function CategoriesPage() {
       <table className="w-full border">
         <thead>
           <tr className="bg-gray-100">
-            <th className="p-2">Name</th>
+            <th className="p-2 text-left">Name</th>
+            <th className="p-2 text-left">Description</th>
             <th className="p-2 w-32">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((c) => (
+          {categories.map((c) => (
             <tr key={c.id} className="border-t">
-              <td className="p-2">{c.name}</td>
+              <td className="p-2 flex items-center gap-2">
+                <CategoryIcon icon={c.icon} />
+                <span>{c.name}</span>
+              </td>
+              <td className="p-2 text-sm text-gray-600">
+                {c.description || "—"}
+              </td>
               <td className="p-2 flex gap-2">
                 <button
                   onClick={() => {
@@ -77,6 +85,14 @@ export default function CategoriesPage() {
               </td>
             </tr>
           ))}
+
+          {categories.length === 0 && (
+            <tr>
+              <td colSpan={3} className="p-4 text-center text-gray-500">
+                No categories found
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
