@@ -180,10 +180,18 @@ export function PurchaseForm({ editingPurchase, onSubmit, onCancel }: Props) {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          className="bg-accent text-white px-3 py-1 rounded"
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+        >
           Cancel
         </Button>
-        <Button type="submit">
+        <Button
+          className="bg-accent text-white px-3 py-1 rounded"
+          type="submit"
+        >
           {isEdit ? "Update Purchase" : "Save Purchase"}
         </Button>
       </div>

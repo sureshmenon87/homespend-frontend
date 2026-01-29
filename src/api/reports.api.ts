@@ -3,6 +3,7 @@ import type {
   MonthlySpend,
   CategorySpend,
   ShopSavings,
+  ItemPricePoint,
 } from "../features/reports/types";
 
 export const getMonthlySpend = () =>
@@ -13,3 +14,5 @@ export const getCategoryWiseSpend = () =>
 
 export const getShopWiseSavings = () =>
   http<ShopSavings[]>("/reports/shop-savings");
+export const getItemPriceTrend = (itemId: number) =>
+  http<ItemPricePoint[]>(`/reports/items/${itemId}/price-trend`);

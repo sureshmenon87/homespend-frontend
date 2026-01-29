@@ -48,16 +48,16 @@ export default function ShopsPage() {
         </button>
       </div>
 
-      <table className="w-full border">
+      <table className="w-full border border-app">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-app min-h-screen">
             <th className="p-2 text-left">Name</th>
             <th className="p-2 w-32">Actions</th>
           </tr>
         </thead>
         <tbody>
           {shops.map((s) => (
-            <tr key={s.id} className="border-t">
+            <tr key={s.id} className="border-t border-app">
               <td className="p-2 font-medium">{s.name}</td>
               <td className="p-2 flex gap-2">
                 <button
@@ -68,14 +68,19 @@ export default function ShopsPage() {
                 >
                   ✏️
                 </button>
-                <button onClick={() => handleDelete(s.id)}>🗑️</button>
+                <button
+                  className="bg-accent text-white px-3 py-1 rounded"
+                  onClick={() => handleDelete(s.id)}
+                >
+                  🗑️
+                </button>
               </td>
             </tr>
           ))}
 
           {shops.length === 0 && (
             <tr>
-              <td colSpan={2} className="p-4 text-center text-gray-500">
+              <td colSpan={2} className="p-4 text-center text-app">
                 No shops found
               </td>
             </tr>

@@ -12,3 +12,8 @@ export interface ShopSavings {
   shop: string;
   totalSaved: number;
 }
+
+export interface ItemPricePoint {
+  month: string;
+  unitPrice: number;
+}

@@ -89,14 +89,14 @@ export default function ItemsPage() {
       {/* Search + Sort Controls */}
       <div className="flex gap-3 items-center">
         <input
-          className="border px-3 py-2 w-64"
+          className="border border-app px-3 py-2 w-64"
           placeholder="Search item or category..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
-          className="border px-2 py-2"
+          className="border border-app px-2 py-2"
           value={sortKey}
           onChange={(e) => setSortKey(e.target.value as SortKey)}
         >
@@ -105,7 +105,7 @@ export default function ItemsPage() {
         </select>
 
         <button
-          className="border px-3 py-2"
+          className="border border-app  px-3 py-2"
           onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
         >
           {sortOrder === "asc" ? "↑ A–Z" : "↓ Z–A"}
@@ -113,9 +113,9 @@ export default function ItemsPage() {
       </div>
 
       {/* Table */}
-      <table className="w-full border">
+      <table className="w-full border border-app">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-app min-h-screen">
             <th className="p-2 text-left">Item</th>
             <th className="p-2 text-left">Category</th>
             <th className="p-2 w-32">Actions</th>
@@ -123,7 +123,7 @@ export default function ItemsPage() {
         </thead>
         <tbody>
           {filteredItems.map((i) => (
-            <tr key={i.id} className="border-t">
+            <tr key={i.id} className="border-t border-app">
               <td className="p-2">{i.name}</td>
               <td className="p-2">{i.category.name}</td>
               <td className="p-2 flex gap-2">
@@ -142,7 +142,7 @@ export default function ItemsPage() {
 
           {filteredItems.length === 0 && (
             <tr>
-              <td colSpan={3} className="p-4 text-center text-gray-500">
+              <td colSpan={3} className="p-4 text-center text-app">
                 No items found
               </td>
             </tr>

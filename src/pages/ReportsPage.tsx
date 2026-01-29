@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -10,270 +12,202 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
+  Legend,
 } from "recharts";
+import { useEffect, useState } from "react";
 import {
   getMonthlySpend,
   getCategoryWiseSpend,
-  getShopWiseSavings,
-} from "../api/reports.api";
+  getItemPriceTrend,
+} from "@/api/reports.api";
+import { getItems } from "@/api/items.api";
+import type { PriceTrends } from "@/features/reports/types";
+import React from "react";
 
-const COLORS = ["#2563eb", "#16a34a", "#f97316", "#dc2626", "#7c3aed"];
+const COLORS = ["#2563eb", "#16a34a", "#f97316", "#dc2626"];
 
 export default function ReportsPage() {
+  const [monthly, setMonthly] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [items, setItems] = useState<any[]>([]);
+  const [itemId, setItemId] = useState<number>();
+  const [priceData, setPriceData] = useState<PriceTrends[]>([]);
+  const [chartType, setChartType] = useState<"line" | "bar" | "area">("line");
+
+  useEffect(() => {
+    getMonthlySpend().then(setMonthly);
+    getCategoryWiseSpend().then(setCategories);
+    getItems().then(setItems);
+  }, []);
+
+  useEffect(() => {
+    if (!itemId) return;
+
+    getItemPriceTrend(itemId).then((data) => {
+      setPriceData(data);
+    });
+  }, [itemId]);
+
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [activeShop, setActiveShop] = useState<string | null>(null);
 
-  const { data: monthly = [] } = useQuery({
-    queryKey: ["monthly-spend"],
-    queryFn: getMonthlySpend,
-  });
+  const total = categories.reduce((sum, c) => sum + c.totalSpent, 0);
 
-  const { data: category = [] } = useQuery({
-    queryKey: ["category-wise"],
-    queryFn: getCategoryWiseSpend,
-  });
-
-  const { data: savings = [] } = useQuery({
-    queryKey: ["shop-wise-savings"],
-    queryFn: getShopWiseSavings,
-  });
-
-  /* ============================
-     Normalize numbers (IMPORTANT)
-  ============================ */
-  const normalizedMonthly = monthly.map((m) => ({
-    month: m.month,
-    totalSpent: Number(m.totalSpent) || 0,
+  const pieData = categories.map((c) => ({
+    ...c,
+    percent: (c.totalSpent / total) * 100,
   }));
 
-  const normalizedCategory = category.map((c) => ({
-    category: c.category,
-    totalSpent: Number(c.totalSpent) || 0,
-  }));
+  const sortedPieData = React.useMemo(() => {
+    return [...pieData].sort((a, b) => b.totalSpent - a.totalSpent);
+  }, [pieData]);
+  const filteredMonthly = activeCategory
+    ? monthly.filter((m) => m.category === activeCategory)
+    : monthly;
 
-  const normalizedSavings = savings.map((s) => ({
-    shop: s.shop,
-    totalSaved: Number(s.totalSaved) || 0,
-  }));
-
-  /* ============================
-     Summary Calculations
-  ============================ */
-  const totalSpend = normalizedCategory.reduce(
-    (sum, c) => sum + c.totalSpent,
-    0
-  );
-
-  const totalSavings = normalizedSavings.reduce(
-    (sum, s) => sum + s.totalSaved,
-    0
-  );
-
-  const avgMonthlySpend =
-    normalizedMonthly.length > 0 ? totalSpend / normalizedMonthly.length : 0;
-
-  const highestSpendingMonth = normalizedMonthly.reduce(
-    (max, m) => (m.totalSpent > (max?.totalSpent ?? 0) ? m : max),
-    null as null | { month: string; totalSpent: number }
-  );
-
-  const topCategory = normalizedCategory.reduce(
-    (max, c) => (c.totalSpent > (max?.totalSpent ?? 0) ? c : max),
-    null as null | { category: string; totalSpent: number }
-  );
-
-  const mostSavingShop = normalizedSavings.reduce(
-    (max, s) => (s.totalSaved > (max?.totalSaved ?? 0) ? s : max),
-    null as null | { shop: string; totalSaved: number }
-  );
-
-  /* ============================
-     Trend Arrow (Monthly)
-  ============================ */
-  const monthlyTrend =
-    normalizedMonthly.length >= 2
-      ? normalizedMonthly.at(-1)!.totalSpent -
-        normalizedMonthly.at(-2)!.totalSpent
-      : 0;
-
-  const trendUp = monthlyTrend > 0;
-
-  /* ============================
-     Filtered Chart Data
-  ============================ */
-  const filteredCategory = activeCategory
-    ? normalizedCategory.filter((c) => c.category === activeCategory)
-    : normalizedCategory;
-
-  const filteredSavings = activeShop
-    ? normalizedSavings.filter((s) => s.shop === activeShop)
-    : normalizedSavings;
-
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   return (
-    <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-semibold">Reports</h1>
+    <div className="space-y-8">
+      {/* MONTHLY */}
 
-      {/* ============================
-         Summary Cards
-      ============================ */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">Total Spend</p>
-          <p className="text-xl font-semibold">₹{totalSpend.toFixed(2)}</p>
-        </div>
+      {}
 
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">Total Savings</p>
-          <p className="text-xl font-semibold text-green-600">
-            ₹{totalSavings.toFixed(2)}
-          </p>
-        </div>
+      {/* CATEGORY */}
+      <Section title="Category-wise Spend">
+        <ResponsiveContainer width="100%" height={350}>
+          <PieChart>
+            <Pie
+              data={sortedPieData}
+              dataKey="totalSpent"
+              nameKey="category"
+              innerRadius={70}
+              outerRadius={110}
+              activeIndex={activeIndex ?? undefined}
+              activeShape={{ outerRadius: 120 }}
+              onMouseEnter={(_, i) => setActiveIndex(i)}
+              onMouseLeave={() => setActiveIndex(null)}
+            >
+              {sortedPieData.map((entry, index) => (
+                <Cell
+                  key={`cell-${entry.category}`} // Use a unique name key, not index i
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Legend
+              layout="vertical"
+              align="right"
+              verticalAlign="middle"
+              onClick={(e: any) =>
+                setActiveCategory((prev) => (prev === e.value ? null : e.value))
+              }
+              formatter={(name, entry: any) =>
+                `${name} (${entry?.payload?.percent?.toFixed(1) ?? "0"}%)`
+              }
+            />
 
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">Avg Monthly Spend</p>
-          <p className="text-xl font-semibold">₹{avgMonthlySpend.toFixed(2)}</p>
-          <p
-            className={`text-sm font-medium ${
-              trendUp ? "text-red-600" : "text-green-600"
-            }`}
+            {/* Center total */}
+            <text x="50%" y="50%" textAnchor="middle">
+              ₹{total.toFixed(0)}
+            </text>
+            <text x="50%" y="58%" textAnchor="middle" fill="#666">
+              Total Spend
+            </text>
+
+            <Tooltip formatter={(v: number) => `₹${v.toFixed(0)}`} />
+          </PieChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart data={filteredMonthly}>
+            <XAxis dataKey="month" />
+            <YAxis tickFormatter={(v) => `₹${(v / 1000).toFixed(1)}K`} />
+            <Tooltip formatter={(v: number) => `₹${v}`} />
+            <Line
+              type="monotone"
+              dataKey="totalSpent"
+              stroke="#2563eb"
+              strokeWidth={2}
+              dot={{ r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Section>
+
+      {/* ITEM PRICE */}
+      <Section title="Item Price Analysis">
+        <div className="flex gap-4 mb-4">
+          <select
+            onChange={(e) => setItemId(Number(e.target.value))}
+            className="border border-app p-2"
           >
-            {trendUp ? "↑ Increased" : "↓ Decreased"}
-          </p>
+            <option>Select item</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={chartType}
+            onChange={(e) => setChartType(e.target.value as any)}
+            className="border border-app p-2"
+          >
+            <option value="line">Line</option>
+            <option value="bar">Bar</option>
+            <option value="area">Area</option>
+          </select>
         </div>
 
-        <div
-          className="border rounded p-4 cursor-pointer hover:bg-accent"
-          onClick={() =>
-            setActiveCategory(
-              activeCategory === topCategory?.category
-                ? null
-                : topCategory?.category ?? null
-            )
-          }
-        >
-          <p className="text-sm text-muted-foreground">Top Category</p>
-          <p className="text-xl font-semibold">
-            {topCategory?.category ?? "—"}
-          </p>
-        </div>
-      </div>
-
-      {/* ============================
-         Highest / Saving Cards
-      ============================ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">
-            Highest Spending Month
-          </p>
-          <p className="text-lg font-semibold">
-            {highestSpendingMonth
-              ? new Date(highestSpendingMonth.month).toLocaleDateString(
-                  "en-IN",
-                  { month: "short", year: "numeric" }
-                )
-              : "—"}
-          </p>
-          <p className="text-sm">
-            ₹{highestSpendingMonth?.totalSpent.toFixed(2) ?? "0.00"}
-          </p>
-        </div>
-
-        <div
-          className="border rounded p-4 cursor-pointer hover:bg-accent"
-          onClick={() =>
-            setActiveShop(
-              activeShop === mostSavingShop?.shop
-                ? null
-                : mostSavingShop?.shop ?? null
-            )
-          }
-        >
-          <p className="text-sm text-muted-foreground">Most Saving Shop</p>
-          <p className="text-lg font-semibold">{mostSavingShop?.shop ?? "—"}</p>
-          <p className="text-sm text-green-600">
-            ₹{mostSavingShop?.totalSaved.toFixed(2) ?? "0.00"}
-          </p>
-        </div>
-      </div>
-
-      {/* ============================
-         Charts
-      ============================ */}
-      <section>
-        <h2 className="font-medium mb-2">Monthly Spend</h2>
-        <div className="h-72 border rounded p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={normalizedMonthly}>
-              <XAxis
-                dataKey="month"
-                tickFormatter={(value) =>
-                  new Date(value).toLocaleDateString("en-IN", {
-                    month: "short",
-                    year: "numeric",
-                  })
-                }
-              />
-              <YAxis
-                tickFormatter={(value) => {
-                  if (value >= 1000) return `₹${(value / 1000).toFixed(1)}K`;
-                  return `₹${value}`;
-                }}
-              />
+        <ResponsiveContainer width="100%" height={280}>
+          {chartType === "line" && (
+            <LineChart data={priceData}>
+              <XAxis dataKey="month" />
+              <YAxis domain={[0, "dataMax + 5"]} />
               <Tooltip />
               <Line
                 type="monotone"
-                dataKey="totalSpent"
+                dataKey="unitPrice"
                 stroke="#2563eb"
                 strokeWidth={2}
+                dot={{ r: 4 }}
               />
             </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+          )}
 
-      <section>
-        <h2 className="font-medium mb-2">Category-wise Spend</h2>
-        <div className="h-72 border rounded p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={filteredCategory}
-                dataKey="totalSpent"
-                nameKey="category"
-                outerRadius={100}
-                label
-              >
-                {filteredCategory.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
+          {chartType === "bar" && (
+            <BarChart data={priceData}>
+              <XAxis dataKey="month" />
+              <YAxis />
               <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="font-medium mb-2">Shop-wise Savings</h2>
-        <div className="h-72 border rounded p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={filteredSavings}>
-              <XAxis dataKey="shop" />
-              <YAxis
-                tickFormatter={(value) => {
-                  if (value >= 1000) return `₹${(value / 1000).toFixed(1)}K`;
-                  return `₹${value}`;
-                }}
-              />
-              <Tooltip />
-              <Bar dataKey="totalSaved" fill="#16a34a" />
+              <Bar dataKey="unitPrice" fill="#2563eb" />
             </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+          )}
+
+          {chartType === "area" && (
+            <AreaChart data={priceData}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Area dataKey="unitPrice" stroke="#2563eb" fill="#93c5fd" />
+            </AreaChart>
+          )}
+        </ResponsiveContainer>
+      </Section>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-card text-app border border-app rounded">
+      <h3 className="mb-4">{title}</h3>
+      {children}
     </div>
   );
 }

@@ -10,3 +10,82 @@ body {
 body {
   margin: 0;
 }
+@import "tailwindcss";
+
+/* --------------------
+   Base (Light Theme)
+-------------------- */
+:root {
+  --bg: 255 255 255;
+  --bg-card: 248 249 250;
+  --text: 23 23 23;
+  --text-muted: 100 116 139;
+  --border: 226 232 240;
+  --accent: 37 99 235; /* blue-600 */
+}
+
+/* --------------------
+   Dark Modern (VSCode)
+-------------------- */
+.dark {
+  --bg: 30 30 30; /* #1e1e1e */
+  --bg-card: 37 37 38; /* #252526 */
+  --text: 212 212 212; /* #d4d4d4 */
+  --text-muted: 148 163 184;
+  --border: 60 60 60; /* #3c3c3c */
+  --accent: 0 122 204; /* VSCode blue */
+}
+
+/* --------------------
+   Dusk / Soft Theme
+-------------------- */
+.theme-dusk {
+  --bg: 250 243 232;
+  --bg-card: 255 255 255;
+  --text: 55 65 81;
+  --text-muted: 107 114 128;
+  --border: 229 231 235;
+  --accent: 255 111 97;
+}
+
+/* --------------------
+   Global application
+-------------------- */
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
+}
+* {
+  transition: background-color 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+@layer utilities {
+  .bg-app {
+    background-color: rgb(var(--bg));
+  }
+
+  .bg-card {
+    background-color: rgb(var(--bg-card));
+  }
+
+  .text-app {
+    color: rgb(var(--text));
+  }
+
+  .text-muted {
+    color: rgb(var(--text-muted));
+  }
+
+  .border-app {
+    border-color: rgb(var(--border));
+  }
+
+  .text-accent {
+    color: rgb(var(--accent));
+  }
+
+  .bg-accent {
+    background-color: rgb(var(--accent));
+  }
+}

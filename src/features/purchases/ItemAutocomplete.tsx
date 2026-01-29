@@ -38,10 +38,10 @@ export function ItemAutocomplete({ value, onSelect }: Props) {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="p-0 bg-white border shadow-md rounded-md">
-        <Command className="bg-white">
+      <PopoverContent className="p-0 bg-card border shadow-md rounded-md">
+        <Command className="bg-card">
           <CommandInput placeholder="Search item..." />
-          <CommandList className="bg-white">
+          <CommandList className="bg-card">
             {items.map((item) => (
               <CommandItem
                 key={item.id}

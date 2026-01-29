@@ -8,7 +8,12 @@ export function PurchasesHeader({ onAdd }) {
         <p>Track and manage expenses</p>
       </div>
 
-      <Button onClick={onAdd}>Add Purchase</Button>
+      <Button
+        className="bg-accent text-white px-3 py-1 rounded"
+        onClick={onAdd}
+      >
+        Add Purchase
+      </Button>
     </div>
   );
 }

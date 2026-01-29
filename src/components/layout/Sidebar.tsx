@@ -25,7 +25,7 @@ const masterItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-64 border-r bg-background px-4 py-6 flex flex-col">
+    <aside className="w-64 border-r border-app bg-background px-4 py-6 flex flex-col">
       {/* Logo */}
       <div className="h-14 px-6 flex items-center border-b">
         <span className="text-lg font-semibold tracking-tight">HomeSpend</span>

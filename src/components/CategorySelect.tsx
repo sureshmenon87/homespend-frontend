@@ -23,7 +23,7 @@ export function CategorySelect({ value, categories, onChange }: Props) {
       value={value?.toString()}
       onValueChange={(v) => onChange(Number(v))}
     >
-      <Select.Trigger className="border px-3 py-2 flex items-center gap-2 w-full">
+      <Select.Trigger className="border border-app px-3 py-2 flex items-center gap-2 w-full">
         {selected ? (
           <>
             <CategoryIcon icon={selected.icon} />
@@ -35,7 +35,7 @@ export function CategorySelect({ value, categories, onChange }: Props) {
         <ChevronDown className="ml-auto h-4 w-4" />
       </Select.Trigger>
 
-      <Select.Content className="bg-white border rounded shadow-md w-[320px] max-h-[300px]">
+      <Select.Content className="bg-card border border-app rounded shadow-md w-[320px] max-h-[300px]">
         <Select.Viewport className="max-h-[300px] overflow-y-auto">
           {categories.map((c) => (
             <Select.Item

@@ -1,95 +1,80 @@
-import { useQuery } from "@tanstack/react-query";
 import {
-  getMonthlySpend,
-  getCategoryWiseSpend,
-  getShopWiseSavings,
-} from "../api/reports.api";
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { useEffect, useState } from "react";
+import { getMonthlySpend, getCategoryWiseSpend } from "@/api/reports.api";
+
+const COLORS = [
+  "#2563eb",
+  "#16a34a",
+  "#f97316",
+  "#dc2626",
+  "#7c3aed",
+  "#0891b2",
+];
 
 export default function DashboardPage() {
-  const { data: monthly = [] } = useQuery({
-    queryKey: ["monthly-spend"],
-    queryFn: getMonthlySpend,
-  });
+  const [monthly, setMonthly] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
-  const { data: category = [] } = useQuery({
-    queryKey: ["category-wise"],
-    queryFn: getCategoryWiseSpend,
-  });
+  useEffect(() => {
+    getMonthlySpend().then(setMonthly);
+    getCategoryWiseSpend().then(setCategories);
+  }, []);
 
-  const { data: savings = [] } = useQuery({
-    queryKey: ["shop-wise-savings"],
-    queryFn: getShopWiseSavings,
-  });
+  const totalSpend = categories.reduce((sum, c) => sum + c.totalSpent, 0);
 
-  // Normalize numbers
-  const monthlyData = monthly.map((m) => ({
-    month: m.month,
-    total: Number(m.totalSpent) || 0,
+  const pieData = categories.map((c) => ({
+    ...c,
+    percent: ((c.totalSpent / totalSpend) * 100).toFixed(1),
   }));
 
-  const totalSavings = savings.reduce(
-    (sum, s) => sum + Number(s.totalSaved || 0),
-    0
-  );
-
-  const totalSpend = category.reduce(
-    (sum, c) => sum + Number(c.totalSpent || 0),
-    0
-  );
-
-  const currentMonth = monthlyData.at(-1);
-  const lastMonth = monthlyData.at(-2);
-
-  const avgMonthlySpend =
-    monthlyData.length > 0 ? totalSpend / monthlyData.length : 0;
-
-  const trend =
-    currentMonth && lastMonth ? currentMonth.total - lastMonth.total : 0;
-
-  const trendUp = trend > 0;
-
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="text-muted-foreground">
-        Overview of your spending and savings.
-      </p>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">This Month</p>
-          <p className="text-xl font-semibold">
-            ₹{currentMonth?.total.toFixed(2) ?? "0.00"}
-          </p>
-        </div>
-
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">Last Month</p>
-          <p className="text-xl font-semibold">
-            ₹{lastMonth?.total.toFixed(2) ?? "0.00"}
-          </p>
-        </div>
-
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">Total Savings</p>
-          <p className="text-xl font-semibold text-green-600">
-            ₹{totalSavings.toFixed(2)}
-          </p>
-        </div>
-
-        <div className="border rounded p-4">
-          <p className="text-sm text-muted-foreground">Avg / Month</p>
-          <p className="text-xl font-semibold">₹{avgMonthlySpend.toFixed(2)}</p>
-          <p
-            className={`text-sm font-medium ${
-              trendUp ? "text-red-600" : "text-green-600"
-            }`}
-          >
-            {trendUp ? "↑ Spending increased" : "↓ Spending reduced"}
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* SUMMARY */}
+      <div className="grid grid-cols-3 gap-4">
+        <SummaryCard title="Total Spend" value={`₹${totalSpend.toFixed(0)}`} />
+        <SummaryCard
+          title="Top Category"
+          value={categories[0]?.category ?? "-"}
+        />
+        <SummaryCard title="Months Tracked" value={monthly.length} />
       </div>
+
+      {/* MONTHLY SPEND */}
+      <div className="bg-card text-app border border-app rounded">
+        <h3>Monthly Spend</h3>
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart data={monthly}>
+            <XAxis dataKey="month" />
+            <YAxis tickFormatter={(v) => `₹${(v / 1000).toFixed(1)}K`} />
+            <Tooltip formatter={(v: number) => `₹${v}`} />
+            <Line
+              type="monotone"
+              dataKey="totalSpent"
+              stroke="#2563eb"
+              strokeWidth={2}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({ title, value }: { title: string; value: any }) {
+  return (
+    <div className="bg-card text-app border border-app rounded p-4">
+      <div className="text-sm text-muted-foreground">{title}</div>
+      <div className="text-xl font-semibold">{value}</div>
     </div>
   );
 }

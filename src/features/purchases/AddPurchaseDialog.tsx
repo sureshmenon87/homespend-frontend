@@ -42,7 +42,7 @@ export function AddPurchaseDialog({
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white text-gray-900 max-w-xl">
+      <DialogContent className="bg-card text-app max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Update Purchase" : "Add Purchase"}

@@ -26,7 +26,7 @@ export default function CategoryDialog({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-      <div className="bg-white p-4 rounded w-80">
+      <div className="bg-card p-4 rounded w-80">
         <h2 className="font-semibold mb-3">
           {category ? "Edit Category" : "Add Category"}
         </h2>
@@ -47,9 +47,14 @@ export default function CategoryDialog({
           placeholder="Category description (optional)"
         />
         <div className="flex justify-end gap-2">
-          <button onClick={onClose}>Cancel</button>
           <button
-            className="bg-black text-white px-3 py-1"
+            className="bg-accent text-white px-3 py-1 rounded"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-accent text-white px-3 py-1 rounded bg-black text-white px-3 py-1"
             disabled={!name.trim()}
             onClick={async () => {
               await onSave(name.trim(), description);

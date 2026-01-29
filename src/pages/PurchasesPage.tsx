@@ -116,7 +116,7 @@ export function PurchasesPage() {
         }}
       />
       {/* Table */}
-      <Card>
+      <Card className="bg-card text-app border border-app rounded">
         <CardHeader className="pb-3">
           <h3 className="text-sm font-medium">Recent purchases</h3>
         </CardHeader>
@@ -141,7 +141,7 @@ export function PurchasesPage() {
                   setPage(1);
                   setLimit(Number(e.target.value));
                 }}
-                className="border rounded px-2 py-1 text-sm"
+                className="border border-app rounded px-2 py-1 text-sm"
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>

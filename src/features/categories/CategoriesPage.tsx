@@ -54,9 +54,9 @@ export default function CategoriesPage() {
         </button>
       </div>
 
-      <table className="w-full border">
+      <table className="w-full border border-app">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-app min-h-screen">
             <th className="p-2 text-left">Name</th>
             <th className="p-2 text-left">Description</th>
             <th className="p-2 w-32">Actions</th>
@@ -64,14 +64,12 @@ export default function CategoriesPage() {
         </thead>
         <tbody>
           {categories.map((c) => (
-            <tr key={c.id} className="border-t">
+            <tr key={c.id} className="border-t border-app">
               <td className="p-2 flex items-center gap-2">
                 <CategoryIcon icon={c.icon} />
                 <span>{c.name}</span>
               </td>
-              <td className="p-2 text-sm text-gray-600">
-                {c.description || "—"}
-              </td>
+              <td className="p-2 text-sm text-app">{c.description || "—"}</td>
               <td className="p-2 flex gap-2">
                 <button
                   onClick={() => {
@@ -81,14 +79,19 @@ export default function CategoriesPage() {
                 >
                   ✏️
                 </button>
-                <button onClick={() => handleDelete(c.id)}>🗑️</button>
+                <button
+                  className="bg-accent text-white px-3 py-1 rounded"
+                  onClick={() => handleDelete(c.id)}
+                >
+                  🗑️
+                </button>
               </td>
             </tr>
           ))}
 
           {categories.length === 0 && (
             <tr>
-              <td colSpan={3} className="p-4 text-center text-gray-500">
+              <td colSpan={3} className="p-4 text-center text-app">
                 No categories found
               </td>
             </tr>

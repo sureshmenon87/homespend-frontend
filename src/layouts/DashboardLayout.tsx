@@ -6,7 +6,7 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen flex bg-muted/40">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-background">
+      <aside className="w-64 border-r border-app bg-background">
         <Sidebar />
       </aside>
 
